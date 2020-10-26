@@ -1,20 +1,11 @@
 (function () {
-  //   write your code here
-  const BASE_URL = "https://movie-list.alphacamp.io";
-  const INDEX_URL = BASE_URL + "/api/v1/movies/";
-  const POSTER_URL = BASE_URL + "/posters/"; //取得圖片海報
-  const data = [];
-  axios
-    .get(INDEX_URL)
-    .then((response) => {
-      response.data.results.forEach((item) => {
-        data.push(item);
-      });
-      displayDataList(data);
-      console.log(data);
-      // console.log(data.length);
-    })
-    .catch((err) => console.log(err));
+  const BASE_URL = 'https://movie-list.alphacamp.io'
+  const INDEX_URL = BASE_URL + '/api/v1/movies/'
+  const POSTER_URL = BASE_URL + '/posters/'
+  // const dataPanel = document.getElementById('data-panel')
+  const data = JSON.parse(localStorage.getItem('favoriteMovies')) || []
+
+  displayDataList(data)
 
   function displayDataList(data) {
     let htmlContent = "";
@@ -29,7 +20,7 @@
           <!-- "More" button 使用dataset傳入item.id -->
           <div class="card-footer">
             <button class="btn btn-primary btn-show-movie" data-toggle="modal" data-target="#show-movie-modal" data-id="${item.id}">More</button>
-            <button class="btn btn-info btn-add-favorite" data-id="${item.id}">+</button>
+              <button class="btn btn-danger btn-remove-favorite" data-id="${item.id}">X</button>
           </div>
         </div>
       </div>
@@ -37,6 +28,8 @@
     });
     $("#data-panel").html(htmlContent);
   }
+
+
 
   //顯示當前movie的資訊
   function showMovie(id) {
@@ -56,47 +49,26 @@
     })
   }
 
+  function removeFavoriteItem(id) {
+    //找到陣列中相對應的index
+    const index = data.findIndex(movie => movie.id === Number(id))
+    console.log(index)
+    data.splice(index, 1)
+    localStorage.setItem('favoriteMovies', JSON.stringify(data))
+    displayDataList(data)
 
-  function addFavoriteItem(id) {
-    const list = JSON.parse(localStorage.getItem("favoriteMovies")) || []
-    const movie = data.find(movie => movie.id === Number(id))
-
-    if(list.some(item => item.id === Number(id))) {
-      alert(`${movie.title} is already in your favorite list.`)
-    }else {
-      list.push(movie)
-      alert(`${movie.title} is added in your favorite list.`)
-    }
-    localStorage.setItem("favoriteMovies", JSON.stringify(list))
   }
-  
-  //點擊more btn 取得 button標籤內的data-id
+
   $("#data-panel").click(function(e){
     if(e.target.matches(".btn-show-movie")) {
       let id = e.target.dataset.id
       showMovie(id)
     }
 
-    if(e.target.matches(".btn-add-favorite")) {
+    if(e.target.matches(".btn-remove-favorite")) {
       let id = e.target.dataset.id
-      console.log(id)
-      addFavoriteItem(id) 
+      // console.log(id)
+      removeFavoriteItem(id)
     }
   })
-
-
-  
-
-  
-
-  //search function
-  $("#search").submit(function(e){
-    e.preventDefault()
-    const searchInput = $("#search-input").val()
-    const regex = new RegExp(searchInput, 'i')
-    let results = data.filter(movie => movie.title.match(regex))
-    displayDataList(results)
-    console.log(results)
-  })
-  
-})();
+})()
